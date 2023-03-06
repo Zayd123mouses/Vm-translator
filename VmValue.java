@@ -1,17 +1,36 @@
- public interface VmValue {
-    Pair getArguments();
-    String WriteAssembly();
-        
+abstract public class  VmValue {
+   public String POP_SP_to_D = "@SP\nM=M-1\nA=M\nD=M\n";
+   public String starSP_equal_D_AND_increase_sp = "@SP\nA=M\nM=D\n@SP\nM=M+1\n";
+
+   abstract Pair getArguments();
+   abstract  String WriteAssembly(String FileName);
+   abstract int arg2();
+    
+   
+   
+   public String getFilename(String filename) 
+   {
+       return filename.split("\\.")[0] + "." + arg2();
+   }
+       
+   String ThisOrThat() {
+    if(Integer.valueOf(arg2()) == 0){
+        return "THIS";
+    }else{
+        return "THAT";
+    }
+   }     
+
 }
 
 
-class Push implements VmValue{
+class Push extends VmValue{
     private String Arg1;
     private String Arg2;
     private Pair Arguments;
 
   public static void main(String[] args) {
-    new Push("push local 5").WriteAssembly();
+    new Push("push constant 17").WriteAssembly("Foo.out");
   }
     public Push(String command){
         String[] commandElements = command.split(" ");
@@ -22,34 +41,68 @@ class Push implements VmValue{
 
 //    ---------------------------------------------
 
-    public String WriteAssembly(){
+    public String WriteAssembly(String FileName){
         System.out.println(Arg1);
     switch (Arg1) {
         case "constant":
             return handleConstant();
             
         case "static":
-         return "";
+         return handleStatic(FileName);
 
         case "pointer":
-        return "";
+        return handlePointer();
 
         case "temp":
-        return "";
+        return handleTemp();
 
         default:
-        return handleLocal_Argument_this_that();
-
-        
+        return handleLocal_Argument_this_that();       
             
     }
    
  
     }
 //    ---------------------------------------------
+    
+// push static 5
+// arg1 = static
+// arg2 = 5
+
+   private String handlePointer(){
+    String rightSegment = ThisOrThat();
+    String code = String.format("//write push pointer %s\n@%s\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
+                                 Arg2, rightSegment);
+    System.out.println(code);
+    return code;
+
+    
+   }
+
+    
+
+
+   private String handleTemp() {
+    String code = String.format("//write push Temp %s\n@%s\nD=A\n@%s\nD=D+A\nA=D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
+                                Arg2,Arg2,"5");
+    System.out.println(code);
+    return code;
+    
+   }
+
+
+    private String handleStatic(String filename){
+
+        String code = String.format("// write push static %s\n@%s\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
+                                    ,Arg2,getFilename(filename));
+        System.out.print(code);
+        return code;
+    }
+
+   
 
     private String handleConstant() {
-        String code = String.format("//write push constant %s\n@SP\nA=M\nM=%s\n@SP\nM=M+1\n",Arg2,Arg2); 
+        String code = String.format("//write push constant %s\n@%s\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",Arg2,Arg2); 
         System.out.print(code);
         return code;
     }
@@ -74,11 +127,11 @@ class Push implements VmValue{
         
     }
 
-    private String arg1() {
+    public String arg1() {
         return Arg1;
     }
 
-    private int arg2(){
+    public int arg2(){
         return Integer.valueOf(Arg2);
     }
 
@@ -94,10 +147,18 @@ class Push implements VmValue{
 }
 
 
-class Pop implements VmValue{
+
+
+class Pop extends VmValue{
     private String Arg1;
     private String Arg2;
     private Pair Arguments;
+
+
+    public static void main(String[] args) {
+        new Pop("pop pointer 0").WriteAssembly("Foo.out");
+      }
+
 
     public Pop(String command){
         String[] commandElements = command.split(" ");
@@ -107,15 +168,80 @@ class Pop implements VmValue{
     }
 
 
-    public String WriteAssembly(){
-        return "";
+    public String WriteAssembly(String FileName){
+        System.out.println(Arg1);
+    switch (Arg1) {
+     
+        case "static":
+         return handleStatic(FileName);
+
+        case "pointer":
+        return handlePointer();
+
+        case "temp":
+        return handleTemp();
+
+        default:
+        return handleLocal_Argument_this_that();       
+            
+    }
+}
+
+//-----------------------------------
+
+   private String handlePointer(){
+    String code = String.format("//Write pop Pointer %s\n@SP\nM=M-1\nA=M\nD=M\n@%s\nM=D\n",
+                                Arg2,ThisOrThat());
+    System.out.println(code);
+    return code;
    }
 
-    private String arg1() {
+
+   private String handleTemp() {
+    String code = String.format("//Write pop temp %s\n@%s\nD=A\n@addr\nM=D\n@%s\nD=A\n@addr\nM=M+D\n@SP\nM=M-1\nA=M\nD=M\n@addr\nA=M\nM=D\n",
+                               Arg2,Arg2,"5");
+    System.out.println(code);               
+    return code;
+   }
+   
+   private String handleStatic(String FileName) {
+
+    String code = String.format("//write pop static %s\n@SP\nM=M-1\nA=M\nD=M\n@%s\nM=D\n"
+    ,Arg2,getFilename(FileName));
+
+     System.out.println(code);
+    return code;
+}
+
+  
+   
+   private String handleLocal_Argument_this_that(){
+    String symbol;
+    switch (Arg1) {
+        case "local":
+            symbol = "LCL";
+            break;
+        case "argument":
+            symbol = "ARG";
+            break;
+        
+        default:
+            symbol = Arg1.toUpperCase();
+            break;
+        
+    }
+    String code = String.format("//Write pop %s %s\n@%s\nD=A\n@%s\nD=M+D\n@addr\nM=D\n@SP\nM=M-1\nA=M\nD=M\n@addr\nA=M\nM=D\n",
+                                Arg1,Arg2,Arg2,symbol);
+    System.out.println(code);                           
+    return code;
+
+}
+
+    public String arg1() {
         return Arg1;
     }
 
-    private int arg2(){
+    public int arg2(){
         return Integer.valueOf(Arg2);
     }
 
@@ -130,9 +256,13 @@ class Pop implements VmValue{
 
 
 
-class ARITHMETIC implements VmValue{
+class ARITHMETIC extends VmValue{
     private String Arg1;
     private Pair Arguments;
+    
+    public static void main(String[] args) {
+        new ARITHMETIC("sub").WriteAssembly("");
+    }
 
     public ARITHMETIC(String command){
         Arg1 = command;
@@ -140,14 +270,56 @@ class ARITHMETIC implements VmValue{
     }
 
 
-    public String WriteAssembly(){
-        return "";
+    public String WriteAssembly(String FileName){
+        System.out.println(Arg1);
+        switch (Arg1) {
+         
+            case "add":
+             return handleAdd();
+    
+            case "sub":
+            return handleSub();
+    
+            case "neg":
+            return handleNeg();
+    
+            default:
+            return "handleLocal_Argument_this_that()"; 
+        }      
+                
    }
 
-    private String arg1() {
+   private String handleNeg() {
+    String code = String.format("%s@NEG\nM=-D\n%s",POP_SP_to_D,starSP_equal_D_AND_increase_sp);
+    System.out.println(code);
+    return code;
+    
+   }
+
+   private  String handleSub() {
+    String code = String.format("//Write sub\n%s@SUB\nM=D\n%s@SUB\nM=D-M\nD=M\n%s",
+                               POP_SP_to_D,POP_SP_to_D,starSP_equal_D_AND_increase_sp);
+    System.out.println(code);
+    return code;
+    
+   }
+
+   private String handleAdd() {
+    String code = String.format("//Write add\n%s@SUM\nM=D\n%s@SUM\nM=M+D\nD=M\n%s",
+                POP_SP_to_D,POP_SP_to_D,starSP_equal_D_AND_increase_sp);
+
+    System.out.println(code);
+    return code;
+   }
+
+    public String arg1() {
         return Arg1;
     }
    
+    
+     int arg2() {
+        return 0;
+    }
 
 
     public Pair getArguments() {

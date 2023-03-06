@@ -9,7 +9,6 @@ public class Parser {
   private VmValue CommandType;
   private CodeWrite codeWriter;
 
-
     public Parser(String filePath, CodeWrite codewriter) {
         file = new File(filePath);
         codeWriter = codewriter;
@@ -36,6 +35,7 @@ public class Parser {
                 
 
             }
+            codeWriter.Close();
 
         }catch (Exception e){
             System.out.println("ERROR: "+ e);
