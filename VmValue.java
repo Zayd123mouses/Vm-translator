@@ -260,8 +260,9 @@ class ARITHMETIC extends VmValue{
     private String Arg1;
     private Pair Arguments;
     
+    // public static int index = 0;
     public static void main(String[] args) {
-        new ARITHMETIC("sub").WriteAssembly("");
+        new ARITHMETIC("not").WriteAssembly("");
     }
 
     public ARITHMETIC(String command){
@@ -282,6 +283,24 @@ class ARITHMETIC extends VmValue{
     
             case "neg":
             return handleNeg();
+
+            case "and":
+            return handleAnd();
+
+            case "or":
+            return handleOr();
+
+            case "not":
+            return handleNot();
+
+            case "eq":
+            return "handleEq()";
+
+            case "gt":
+            return "handleGT()";
+
+            case "lt":
+            return "handleLt()";
     
             default:
             return "handleLocal_Argument_this_that()"; 
@@ -289,8 +308,40 @@ class ARITHMETIC extends VmValue{
                 
    }
 
+  
+//    private String handleEq(){
+//     // String code = String.format("//Write EQ\n%s@EQ\nM=D\n%s@EQ\nM=D-M\nD=M\n@IS_EQ_%s\n@D;JEQ\n@SP\nA=M\nM=0\n@CONTINUE_%s\n0;JMP\n(IS_EQ_%s)\n@SP\nA=M\nM=1\n@SP\nAM=M+1\n(CONTINUE_%s)\n",
+//     //                        POP_SP_to_D,POP_SP_to_D,String.valueOf(ARITHMETIC.index),String.valueOf(index),String.valueOf(index),String.valueOf(index));
+
+//     // System.out.println(code);                      
+//     // return code;
+//     return "";
+//    }
+
+   private String handleNot(){
+    String code = String.format("//Write Not\n%s@NOT\nM=!D\nD=M\n%s",
+                           POP_SP_to_D,starSP_equal_D_AND_increase_sp);
+     System.out.println(code);                      
+    return code;
+   }
+
+
+   private String handleOr(){
+    String code = String.format("//Write Or\n%s@AND\nM=D\n%s@AND\nM=D|M\nD=M\n%s",
+                           POP_SP_to_D,POP_SP_to_D,starSP_equal_D_AND_increase_sp);
+     System.out.println(code);                      
+    return code;
+   }
+
+   private String handleAnd(){
+    String code = String.format("//Write And\n%s@AND\nM=D\n%s@AND\nM=D&M\nD=M\n%s",
+                           POP_SP_to_D,POP_SP_to_D,starSP_equal_D_AND_increase_sp);
+     System.out.println(code);                      
+    return code;
+   }
+
    private String handleNeg() {
-    String code = String.format("%s@NEG\nM=-D\n%s",POP_SP_to_D,starSP_equal_D_AND_increase_sp);
+    String code = String.format("//Write neg\n%s@NEG\nM=-D\nD=M\n%s",POP_SP_to_D,starSP_equal_D_AND_increase_sp);
     System.out.println(code);
     return code;
     
