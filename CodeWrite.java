@@ -11,6 +11,7 @@ public class CodeWrite {
     private String FileName;
 
     public CodeWrite(String filePath,String filename) throws IOException {
+      
         file = new File(filePath);
          fw = new FileWriter(file);
          pw = new PrintWriter(fw);

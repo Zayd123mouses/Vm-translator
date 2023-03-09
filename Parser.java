@@ -39,6 +39,7 @@ public class Parser {
 
         }catch (Exception e){
             System.out.println("ERROR: "+ e);
+            System.out.println("ERROR: Parser problem -----------------");
         }
         
     }

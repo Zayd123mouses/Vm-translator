@@ -122,7 +122,7 @@ class Push extends VmValue{
                 break;
         }
         String code = String.format("//write push %s %s\n@%s\nD=A\n@%s\nD=D+M\nA=D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",Arg1,Arg2,Arg2,symbol);
-        System.out.println(code);
+        // System.out.println(code);
         return code;
         
     }
@@ -260,9 +260,9 @@ class ARITHMETIC extends VmValue{
     private String Arg1;
     private Pair Arguments;
     
-    // public static int index = 0;
+    public static int index = 0;
     public static void main(String[] args) {
-        new ARITHMETIC("not").WriteAssembly("");
+        new ARITHMETIC("lt").WriteAssembly("");
     }
 
     public ARITHMETIC(String command){
@@ -293,30 +293,45 @@ class ARITHMETIC extends VmValue{
             case "not":
             return handleNot();
 
-            case "eq":
-            return "handleEq()";
+            
 
             case "gt":
-            return "handleGT()";
+            return handleGT();
 
             case "lt":
-            return "handleLt()";
+            return handleLt();
     
             default:
-            return "handleLocal_Argument_this_that()"; 
+              return handleEq();
         }      
                 
    }
 
-  
-//    private String handleEq(){
-//     // String code = String.format("//Write EQ\n%s@EQ\nM=D\n%s@EQ\nM=D-M\nD=M\n@IS_EQ_%s\n@D;JEQ\n@SP\nA=M\nM=0\n@CONTINUE_%s\n0;JMP\n(IS_EQ_%s)\n@SP\nA=M\nM=1\n@SP\nAM=M+1\n(CONTINUE_%s)\n",
-//     //                        POP_SP_to_D,POP_SP_to_D,String.valueOf(ARITHMETIC.index),String.valueOf(index),String.valueOf(index),String.valueOf(index));
+  private String handleLt() {
+    String code =  String.format("//Write LT\n%s@LT\nM=D\n%s@LT\nM=D-M\nD=M\n@IS_LT_%s\nD;JLT\n@SP\nA=M\nM=0\n@SP\nM=M+1\n@CONTINUE_%s\n0;JMP\n(IS_LT_%s)\n@SP\nA=M\nM=-1\n@SP\nM=M+1\n(CONTINUE_%s)\n",
+    POP_SP_to_D,POP_SP_to_D,String.valueOf(ARITHMETIC.index),String.valueOf(index),String.valueOf(index),String.valueOf(index));
+    
+    ARITHMETIC.index++;
+    System.out.println(code);
+    return code;
+    
+  }
+  private String handleGT() {
+    String code = String.format("//Write GT\n%s@GT\nM=D\n%s@GT\nM=D-M\nD=M\n@IS_GT_%s\nD;JGT\n@SP\nA=M\nM=0\n@SP\nM=M+1\n@CONTINUE_%s\n0;JMP\n(IS_GT_%s)\n@SP\nA=M\nM=-1\n@SP\nM=M+1\n(CONTINUE_%s)\n",
+    POP_SP_to_D,POP_SP_to_D,String.valueOf(ARITHMETIC.index),String.valueOf(index),String.valueOf(index),String.valueOf(index));
+    ARITHMETIC.index++;
+    System.out.println(code);
+    return code;
+    
+  }
 
-//     // System.out.println(code);                      
-//     // return code;
-//     return "";
-//    }
+   private String handleEq(){
+    String code = String.format("//Write EQ\n%s@EQ\nM=D\n%s@EQ\nM=D-M\nD=M\n@IS_EQ_%s\nD;JEQ\n@SP\nA=M\nM=0\n@SP\nM=M+1\n@CONTINUE_%s\n0;JMP\n(IS_EQ_%s)\n@SP\nA=M\nM=-1\n@SP\nM=M+1\n(CONTINUE_%s)\n",
+                           POP_SP_to_D,POP_SP_to_D,String.valueOf(ARITHMETIC.index),String.valueOf(index),String.valueOf(index),String.valueOf(index));
+    ARITHMETIC.index++;
+    System.out.println(code);                      
+    return code;
+   }
 
    private String handleNot(){
     String code = String.format("//Write Not\n%s@NOT\nM=!D\nD=M\n%s",
